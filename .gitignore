@@ -9,7 +9,6 @@ build/
 dist/
 *.spec
 XtreWeather.exe
-xtreweather.ico
 __pycache__/
 *.pyc
 .venv/

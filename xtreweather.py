@@ -33,6 +33,8 @@ from xtre_i18n import t
 
 TAREA = "XtreWeather"
 COLOR_ESTADO = {"state_running": "green", "state_stopped": "gray"}
+# Sin ninguna escritura del plugin en este tiempo, la sesion se da por parada.
+SIN_ESCRITURAS_S = 30
 _pool_ui = ThreadPoolExecutor(max_workers=2)
 
 
@@ -44,7 +46,9 @@ class Runtime:
         self.n = n
         self.pid = None
         self.est = {}
-        self.prev_ver = None
+        self.prev_ver = None        # version del buffer de scoring en la ultima escritura vista
+        self.et_escritura = None    # ET de esa escritura
+        self.t_escritura = 0.0      # hora (time.time) en que se vio
         self.prev_sesion = None
         self.prev_et = None
         self.prev_circuito = None
@@ -133,7 +137,7 @@ class Motor(QObject):
                 r = self.runtime(n)
                 if r.pid != pid:
                     self.log.emit(t("log_detected", n=n, pid=pid))
-                    r.pid, r.prev_ver, r.prev_sesion, r.prev_et = pid, None, None, None
+                    r.pid, r.prev_ver, r.prev_sesion, r.prev_et, r.activo = pid, None, None, None, False
                     r.pendiente, r.aviso_control = True, False
             for n, r in self.rt.items():
                 if r.pid and n not in vistos:
@@ -170,8 +174,15 @@ class Motor(QObject):
             r.set_estado("state_noplugin")
             return
 
-        r.activo = r.prev_ver is not None and est["ver_scoring"] != r.prev_ver
-        r.prev_ver = est["ver_scoring"]
+        # --- sesion en marcha = su reloj (ET) avanza. Solo se decide cuando el plugin reescribe el buffer de
+        # scoring y entre escrituras se mantiene, sea cual sea su ritmo (5 Hz con gente, cada ~2 s o menos con
+        # el servidor vacio). Vale para servidores que se pausan al quedarse vacios (ET quieto) y para los que no.
+        if est["ver_scoring"] != r.prev_ver:
+            if r.prev_ver is not None:
+                r.activo = est["et"] != r.et_escritura
+            r.prev_ver, r.et_escritura, r.t_escritura = est["ver_scoring"], est["et"], ahora
+        elif ahora - r.t_escritura > SIN_ESCRITURAS_S:
+            r.activo = False
 
         # --- cambio de sesion / reinicio / circuito
         if r.prev_sesion is not None and (est["sesion"] != r.prev_sesion or est["et"] + 5 < (r.prev_et or 0)):
