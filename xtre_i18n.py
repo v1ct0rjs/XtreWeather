@@ -38,6 +38,8 @@ TEXTOS = {
         "weather_desc": "lluvia {r:.2f} · nubes {c:.2f} · {t:.1f} °C · viento {w:.1f} m/s",
         "real_info": "{place}  ·  {t:.1f} °C, nubes {c:.0f} %, precip. {mm:.1f} mm/h, viento {w:.1f} m/s  ({hora})",
         "forecast": "pronóstico",
+        "sky_clear": "Despejado", "sky_partly": "Poco nuboso", "sky_cloudy": "Nublado",
+        "sky_rain": "Lluvia", "sky_heavy_rain": "Lluvia fuerte", "sky_nodata": "Sin datos",
         # --- sesiones y fases
         "ses_test": "Test day", "ses_practice": "Práctica {i}", "ses_qual": "Clasificación {i}",
         "ses_warmup": "Warmup", "ses_race": "Carrera {i}",
@@ -170,6 +172,8 @@ TEXTOS = {
         "weather_desc": "rain {r:.2f} · clouds {c:.2f} · {t:.1f} °C · wind {w:.1f} m/s",
         "real_info": "{place}  ·  {t:.1f} °C, clouds {c:.0f} %, precip. {mm:.1f} mm/h, wind {w:.1f} m/s  ({hora})",
         "forecast": "forecast",
+        "sky_clear": "Clear", "sky_partly": "Partly cloudy", "sky_cloudy": "Overcast",
+        "sky_rain": "Rain", "sky_heavy_rain": "Heavy rain", "sky_nodata": "No data",
         "ses_test": "Test day", "ses_practice": "Practice {i}", "ses_qual": "Qualifying {i}",
         "ses_warmup": "Warmup", "ses_race": "Race {i}",
         "phases": ["before start", "formation (recon)", "grid", "formation lap", "countdown",
