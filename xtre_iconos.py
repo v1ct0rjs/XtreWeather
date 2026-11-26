@@ -4,9 +4,10 @@ XtreWeather icons drawn with QPainter (no image files).
 
 Copyright (C) 2026 v1ct0r - Licencia GNU GPL v3 (ver LICENSE). Creado con asistencia de IA.
 
-  * Icono de la aplicacion (ventana, bandeja, "Acerca de" y ejecutable).
+  * Icono de la aplicacion: se lee de xtreweather.ico (el archivo del repositorio que build.bat pone al .exe),
+    asi el ejecutable, la ventana y la bandeja muestran el mismo. Si falta, se usa el dibujo de _logo().
   * Iconos del estado del cielo de cada servidor (ver xtre_core.tipo_cielo).
-  * Exporta el icono de la aplicacion a .ico para PyInstaller:
+  * Regenera xtreweather.ico a partir de _logo() (solo si se cambia el dibujo):
         python xtre_iconos.py [xtreweather.ico]
 """
 import math
@@ -60,27 +61,61 @@ def _logo(p: QPainter):
         p.drawEllipse(QRectF(x, 46, 6, 10))
 
 
+def ruta_ico() -> Path:
+    """xtreweather.ico del repositorio, o la copia que PyInstaller mete en el .exe (--add-data)."""
+    return Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)) / "xtreweather.ico"
+
+
 @lru_cache(maxsize=None)
 def icono_app() -> QIcon:
+    """Icono de xtreweather.ico (el mismo que lleva el .exe). Si el archivo falta o no se puede leer, se dibuja."""
+    ruta = ruta_ico()
+    if ruta.exists():
+        ic = QIcon(str(ruta))
+        if ic.availableSizes():
+            return ic
     return _icono(_logo)
 
 
+def _png(img: QImage) -> bytes:
+    buf = QBuffer()
+    buf.open(QIODevice.WriteOnly)
+    if not img.save(buf, "PNG"):
+        raise RuntimeError("no se pudo generar el PNG del icono")
+    return bytes(buf.data())
+
+
+def _dib(img: QImage) -> bytes:
+    """Entrada .ico clásica: BITMAPINFOHEADER + BGRA de 32 bits de abajo arriba + máscara AND de 1 bit."""
+    img = img.convertToFormat(QImage.Format_ARGB32)          # en memoria (little-endian): B, G, R, A
+    lado, fila = img.width(), img.bytesPerLine()
+    bits = bytes(img.constBits())[:fila * lado]
+    filas = [bits[y * fila:y * fila + lado * 4] for y in range(lado)]
+    ancho_mascara = (lado + 31) // 32 * 4
+    mascara = b""
+    for y in reversed(range(lado)):
+        m = bytearray(ancho_mascara)
+        for x in range(lado):
+            if filas[y][x * 4 + 3] == 0:                         # píxel totalmente transparente
+                m[x // 8] |= 0x80 >> (x % 8)
+        mascara += bytes(m)
+    cabecera = struct.pack("<IiiHHIIiiII", 40, lado, lado * 2, 1, 32, 0, lado * lado * 4 + len(mascara), 0, 0, 0, 0)
+    return cabecera + b"".join(reversed(filas)) + mascara
+
+
 def guardar_ico(ruta, tamanos=TAMANOS_ICO):
-    """Guarda el icono de la aplicacion como .ico con varios tamaños (entradas PNG, Windows Vista o posterior)."""
-    pngs = []
-    for lado in tamanos:
-        buf = QBuffer()
-        buf.open(QIODevice.WriteOnly)
-        if not _imagen(_logo, lado).save(buf, "PNG"):
-            raise RuntimeError(f"no se pudo generar el PNG de {lado} px")
-        pngs.append((lado, bytes(buf.data())))
-    cabecera = struct.pack("<HHH", 0, 1, len(pngs))
-    inicio = 6 + 16 * len(pngs)
+    """Guarda el icono de la aplicacion como .ico con varios tamaños.
+
+    Formato clásico de Windows: mapas de bits de 32 bits (con transparencia) hasta 128 px y PNG en 256 px."""
+    imagenes = [(lado, _png(img) if lado >= 256 else _dib(img))
+                for lado in tamanos for img in [_imagen(_logo, lado)]]
+    cabecera = struct.pack("<HHH", 0, 1, len(imagenes))
+    inicio = 6 + 16 * len(imagenes)
     entradas, datos = b"", b""
-    for lado, png in pngs:
+    for lado, img in imagenes:
         # ancho/alto 0 = 256 px; 1 plano, 32 bits por píxel
-        entradas += struct.pack("<BBBBHHII", lado % 256, lado % 256, 0, 0, 1, 32, len(png), inicio + len(datos))
-        datos += png
+        entradas += struct.pack("<BBBBHHII", lado % 256, lado % 256, 0, 0, 1, 32, len(img), inicio + len(datos))
+        datos += img
     Path(ruta).write_bytes(cabecera + entradas + datos)
 
 
@@ -159,6 +194,6 @@ def icono_cielo(tipo: str) -> QIcon:
 
 
 if __name__ == "__main__":
-    destino = Path(sys.argv[1] if len(sys.argv) > 1 else "xtreweather.ico")
+    destino = Path(sys.argv[1]) if len(sys.argv) > 1 else ruta_ico()
     guardar_ico(destino)
     print(f"OK: {destino.resolve()}")

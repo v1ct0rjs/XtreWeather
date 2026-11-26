@@ -33,6 +33,8 @@ from xtre_i18n import t
 
 TAREA = "XtreWeather"
 COLOR_ESTADO = {"state_running": "green", "state_stopped": "gray"}
+# Sin ninguna escritura del plugin en este tiempo, la sesion se da por parada.
+SIN_ESCRITURAS_S = 30
 _pool_ui = ThreadPoolExecutor(max_workers=2)
 
 
@@ -44,7 +46,9 @@ class Runtime:
         self.n = n
         self.pid = None
         self.est = {}
-        self.prev_ver = None
+        self.prev_ver = None        # version del buffer de scoring en la ultima escritura vista
+        self.et_escritura = None    # ET de esa escritura
+        self.t_escritura = 0.0      # hora (time.time) en que se vio
         self.prev_sesion = None
         self.prev_et = None
         self.prev_circuito = None
@@ -133,7 +137,7 @@ class Motor(QObject):
                 r = self.runtime(n)
                 if r.pid != pid:
                     self.log.emit(t("log_detected", n=n, pid=pid))
-                    r.pid, r.prev_ver, r.prev_sesion, r.prev_et = pid, None, None, None
+                    r.pid, r.prev_ver, r.prev_sesion, r.prev_et, r.activo = pid, None, None, None, False
                     r.pendiente, r.aviso_control = True, False
             for n, r in self.rt.items():
                 if r.pid and n not in vistos:
@@ -170,8 +174,15 @@ class Motor(QObject):
             r.set_estado("state_noplugin")
             return
 
-        r.activo = r.prev_ver is not None and est["ver_scoring"] != r.prev_ver
-        r.prev_ver = est["ver_scoring"]
+        # --- sesion en marcha = su reloj (ET) avanza. Solo se decide cuando el plugin reescribe el buffer de
+        # scoring y entre escrituras se mantiene, sea cual sea su ritmo (5 Hz con gente, cada ~2 s o menos con
+        # el servidor vacio). Vale para servidores que se pausan al quedarse vacios (ET quieto) y para los que no.
+        if est["ver_scoring"] != r.prev_ver:
+            if r.prev_ver is not None:
+                r.activo = est["et"] != r.et_escritura
+            r.prev_ver, r.et_escritura, r.t_escritura = est["ver_scoring"], est["et"], ahora
+        elif ahora - r.t_escritura > SIN_ESCRITURAS_S:
+            r.activo = False
 
         # --- cambio de sesion / reinicio / circuito
         if r.prev_sesion is not None and (est["sesion"] != r.prev_sesion or est["et"] + 5 < (r.prev_et or 0)):
@@ -762,11 +773,9 @@ class Ventana(QMainWindow):
         split.addWidget(self.log)
         split.setSizes([580, 200])
 
+        self._menu()
+
         barra = QHBoxLayout()
-        for txt, fn in ((t("btn_settings"), self._ajustes), (t("btn_about"), self._acerca)):
-            b = QPushButton(txt)
-            b.clicked.connect(fn)
-            barra.addWidget(b)
         barra.addStretch()
         atrib = QLabel(t("attribution"))
         atrib.setOpenExternalLinks(True)
@@ -802,6 +811,32 @@ class Ventana(QMainWindow):
             self._log(t("log_not_windows"))
         if not (minimizado or cfg["general"]["arrancar_minimizado"]) or not QSystemTrayIcon.isSystemTrayAvailable():
             self.show()
+
+    # ---------------------------------------------------------------- menu
+    def _menu(self):
+        m_archivo = self.menuBar().addMenu(t("menu_file"))
+        a_anadir = m_archivo.addAction(t("act_add_server"), self._anadir)
+        a_anadir.setShortcut("Ctrl+N")
+        m_archivo.addAction(t("btn_settings"), self._ajustes)
+        m_archivo.addSeparator()
+        # al cerrar la ventana: seguir en segundo plano (bandeja) o cerrar del todo; por defecto, activado
+        self.a_fondo = m_archivo.addAction(t("act_background"))
+        self.a_fondo.setCheckable(True)
+        self.a_fondo.setChecked(bool(self.cfg["general"]["minimizar_a_bandeja"]))
+        self.a_fondo.setEnabled(QSystemTrayIcon.isSystemTrayAvailable())
+        self.a_fondo.toggled.connect(self._set_fondo)
+        m_archivo.addSeparator()
+        a_salir = m_archivo.addAction(t("act_quit"), self._salir)
+        a_salir.setShortcut("Ctrl+Q")
+        m_ayuda = self.menuBar().addMenu(t("menu_help"))
+        m_ayuda.addAction(t("act_about", app=core.APP_NAME), self._acerca)
+
+    def _set_fondo(self, activo):
+        g = self.cfg["general"]
+        if bool(g["minimizar_a_bandeja"]) != activo:
+            g["minimizar_a_bandeja"] = activo
+            core.save_config(self.cfg)
+            self._log(t("log_background_on" if activo else "log_background_off"))
 
     # ---------------------------------------------------------------- resumen
     def _resumen(self):
@@ -898,6 +933,7 @@ class Ventana(QMainWindow):
     def _ajustes(self):
         if DialogoAjustes(self, self.cfg).exec():
             self._log(t("log_settings_saved"))
+            self.a_fondo.setChecked(bool(self.cfg["general"]["minimizar_a_bandeja"]))
             for n in self.motor.rt:
                 self.motor.forzar_consulta(n)
 
