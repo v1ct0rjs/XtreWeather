@@ -418,3 +418,27 @@ def a_rf2(real: dict, scfg: dict) -> dict:
 
 def describir(clima: dict) -> str:
     return t("weather_desc", r=clima["lluvia"], c=clima["nubes"], t=clima["temp"], w=clima["viento"])
+
+
+def clima_servidor(est: dict):
+    """Clima que tiene ahora el servidor (mismas claves que a_rf2) o None si no hay datos."""
+    if est.get("weather") and est.get("temp") is not None:
+        return {k: est[k] for k in ("lluvia", "nubes", "temp", "viento")}
+    return None
+
+
+def tipo_cielo(clima) -> str:
+    """Estado del cielo para elegir icono: clear | partly | cloudy | rain | heavy_rain | nodata.
+
+    Lluvia >= 0.5 equivale a unos 2,25 mm/h reales (ver a_rf2)."""
+    if not clima:
+        return "nodata"
+    if clima["lluvia"] >= 0.5:
+        return "heavy_rain"
+    if clima["lluvia"] >= 0.01:
+        return "rain"
+    if clima["nubes"] >= 0.7:
+        return "cloudy"
+    if clima["nubes"] >= 0.3:
+        return "partly"
+    return "clear"

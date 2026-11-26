@@ -17,8 +17,8 @@ import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 
-from PySide6.QtCore import QLibraryInfo, QLocale, QObject, Qt, QTimer, QTranslator, Signal
-from PySide6.QtGui import QAction, QBrush, QColor, QFont, QIcon, QPainter, QPixmap
+from PySide6.QtCore import QLibraryInfo, QLocale, QObject, QSize, Qt, QTimer, QTranslator, Signal
+from PySide6.QtGui import QAction, QBrush, QColor, QFont
 from PySide6.QtWidgets import (
     QAbstractItemView, QApplication, QButtonGroup, QCheckBox, QComboBox, QDialog, QDialogButtonBox,
     QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit,
@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
 
 import xtre_core as core
 import xtre_i18n as i18n
+import xtre_iconos as iconos
 from xtre_i18n import t
 
 TAREA = "XtreWeather"
@@ -239,25 +240,6 @@ class Motor(QObject):
 
 
 # =========================================================================== utilidades UI
-def icono():
-    pm = QPixmap(64, 64)
-    pm.fill(Qt.transparent)
-    p = QPainter(pm)
-    p.setRenderHint(QPainter.Antialiasing)
-    p.setBrush(QColor("#1f6feb"))
-    p.setPen(Qt.NoPen)
-    p.drawRoundedRect(2, 2, 60, 60, 14, 14)
-    p.setBrush(QColor("white"))
-    for x, y, d in ((12, 22, 22), (24, 14, 28), (38, 22, 20)):
-        p.drawEllipse(x, y, d, d)
-    p.drawRect(14, 32, 42, 10)
-    p.setBrush(QColor("#9ecbff"))
-    for x in (18, 30, 42):
-        p.drawEllipse(x, 46, 6, 10)
-    p.end()
-    return QIcon(pm)
-
-
 def comando_arranque():
     if getattr(sys, "frozen", False):
         return f'"{sys.executable}" --minimizado'
@@ -557,12 +539,27 @@ class PestanaServidor(QWidget):
         for lb in (self.lb_real, self.lb_objetivo, self.lb_servidor):
             lb.setWordWrap(True)
         g_estado = QGroupBox(t("grp_state"))
-        fe = QFormLayout(g_estado)
+        fe = QFormLayout()
         fe.addRow(t("lbl_state"), self.lb_estado)
         fe.addRow(t("lbl_server_weather"), self.lb_servidor)
         fe.addRow(t("lbl_real"), self.lb_real)
         fe.addRow(t("lbl_target"), self.lb_objetivo)
         fe.addRow(t("lbl_last"), self.lb_envio)
+        # icono grande con el cielo que tiene ahora el servidor
+        self.lb_icono_cielo = QLabel()
+        self.lb_icono_cielo.setFixedSize(64, 64)
+        self.lb_cielo = QLabel()
+        self.lb_cielo.setAlignment(Qt.AlignHCenter)
+        self.lb_cielo.setStyleSheet("color: gray")
+        self._cielo = None
+        col_cielo = QVBoxLayout()
+        col_cielo.addWidget(self.lb_icono_cielo, 0, Qt.AlignHCenter)
+        col_cielo.addWidget(self.lb_cielo)
+        col_cielo.addStretch()
+        he = QHBoxLayout(g_estado)
+        he.addLayout(fe, 1)
+        he.addSpacing(12)
+        he.addLayout(col_cielo)
 
         # --- modo
         self.rb = {"real": QRadioButton(t("mode_real")), "manual": QRadioButton(t("mode_manual")),
@@ -723,10 +720,14 @@ class PestanaServidor(QWidget):
             extra = t("session_line", track=e["circuito"], ses=core.nombre_sesion(e["sesion"]),
                       phase=core.nombre_fase(e["fase"]), et=e["et"], cars=e["coches"])
         self.lb_estado.setText(f'<span style="color:{color}"><b>{r.texto_estado()}</b></span>{extra}')
-        if e.get("weather") and e.get("temp") is not None:
-            self.lb_servidor.setText(core.describir({k: e[k] for k in ("lluvia", "nubes", "temp", "viento")}))
-        else:
-            self.lb_servidor.setText("-")
+        clima = core.clima_servidor(e)
+        self.lb_servidor.setText(core.describir(clima) if clima else "-")
+        cielo = core.tipo_cielo(clima)
+        if cielo != self._cielo:
+            self._cielo = cielo
+            self.lb_icono_cielo.setPixmap(iconos.icono_cielo(cielo).pixmap(QSize(64, 64),
+                                                                          self.devicePixelRatioF()))
+            self.lb_cielo.setText(t("sky_" + cielo))
         self.lb_real.setText(r.real_info if self.s["modo"] == "real" and r.real_info else "-")
         obj = self.motor.objetivo(self.n)
         self.lb_objetivo.setText(core.describir(obj) + (t("pending") if r.pendiente else "") if obj else "-")
@@ -740,7 +741,7 @@ class Ventana(QMainWindow):
         self.cfg = cfg
         self.salir_de_verdad = False
         self.setWindowTitle(t("win_title", app=core.APP_NAME, ver=core.APP_VERSION))
-        self.setWindowIcon(icono())
+        self.setWindowIcon(iconos.icono_app())
         self.resize(980, 780)
 
         self.motor = Motor(cfg)
@@ -783,7 +784,7 @@ class Ventana(QMainWindow):
         for n in sorted(self.motor.rt):
             self._pestana(n)
 
-        self.tray = QSystemTrayIcon(icono(), self)
+        self.tray = QSystemTrayIcon(iconos.icono_app(), self)
         menu = QMenu()
         a_mostrar = QAction(t("tray_show"), self)
         a_mostrar.triggered.connect(self._mostrar)
@@ -813,6 +814,7 @@ class Ventana(QMainWindow):
         h.setSectionResizeMode(QHeaderView.ResizeToContents)
         h.setStretchLastSection(True)
         self.tabla.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tabla.setIconSize(QSize(20, 20))
         self.tabla.verticalHeader().setVisible(False)
         self.tabla.cellDoubleClicked.connect(lambda r, _c: self._ir_a(r))
         lay.addWidget(self.tabla)
@@ -835,11 +837,11 @@ class Ventana(QMainWindow):
             r = self.motor.rt[n]
             e = r.est
             s = core.server_cfg(self.cfg, n)
-            clima = (core.describir({k: e[k] for k in ("lluvia", "nubes", "temp", "viento")})
-                     if e.get("weather") and e.get("temp") is not None else "-")
+            clima = core.clima_servidor(e)
+            cielo = core.tipo_cielo(clima)
             vals = [str(n), r.texto_estado(), e.get("circuito", "-") if e.get("plugin") else "-",
                     core.nombre_sesion(e["sesion"]) if e.get("plugin") else "-", modos.get(s["modo"], s["modo"]),
-                    clima, r.ultimo_envio or "-"]
+                    core.describir(clima) if clima else "-", r.ultimo_envio or "-"]
             for c, v in enumerate(vals):
                 it = self.tabla.item(i, c)
                 if it is None:
@@ -849,6 +851,15 @@ class Ventana(QMainWindow):
                     it.setText(v)
                 if c == 1:
                     it.setForeground(QBrush(QColor(COLOR_ESTADO.get(r.estado, "#c77700"))))
+                elif c == 5 and it.data(Qt.UserRole) != cielo:
+                    it.setData(Qt.UserRole, cielo)
+                    it.setIcon(iconos.icono_cielo(cielo))
+                    it.setToolTip(t("sky_" + cielo))
+            p = self.pestanas[n]
+            if p.property("cielo") != cielo:
+                p.setProperty("cielo", cielo)
+                self.tabs.setTabIcon(self.tabs.indexOf(p), iconos.icono_cielo(cielo))
+                self.tabs.setTabToolTip(self.tabs.indexOf(p), t("sky_" + cielo))
         actual = self.tabs.currentWidget()
         if isinstance(actual, PestanaServidor):
             actual.refrescar()
@@ -895,7 +906,7 @@ class Ventana(QMainWindow):
         caja.setWindowTitle(t("about_title", app=core.APP_NAME))
         caja.setTextFormat(Qt.RichText)
         caja.setText(t("about_text", app=core.APP_NAME, ver=core.APP_VERSION))
-        caja.setIconPixmap(icono().pixmap(64, 64))
+        caja.setIconPixmap(iconos.icono_app().pixmap(64, 64))
         caja.exec()
 
     def _log(self, texto):
@@ -933,10 +944,17 @@ class Ventana(QMainWindow):
 
 
 def main():
+    if core.IS_WIN and not getattr(sys, "frozen", False):
+        # ejecutado con python(w).exe: id propio para que la barra de tareas use nuestro icono y no el de Python
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(f"Xtresimracing.{core.APP_NAME}")
+        except Exception:
+            pass
     app = QApplication(sys.argv)
     app.setApplicationName(core.APP_NAME)
     app.setQuitOnLastWindowClosed(False)
-    app.setWindowIcon(icono())
+    app.setWindowIcon(iconos.icono_app())
     cfg = core.load_config()
     core.save_config(cfg)
     i18n.set_lang(cfg["general"].get("idioma", "auto"))
