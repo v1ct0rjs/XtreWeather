@@ -183,7 +183,7 @@ XtreWeather escribe el clima en el buffer de control del plugin junto con un **m
 
 ### 8.2 Sesión parada
 
-rF2 solo procesa el clima con la **sesión en marcha**. Un servidor dedicado vacío suele tener el reloj parado: XtreWeather lo detecta (estado *sesión parada*), deja el envío **pendiente** y lo hace en cuanto entra alguien. Al cambiar de sesión (práctica → clasificación → carrera) o al reiniciar el fin de semana, vuelve a enviar el clima.
+rF2 solo procesa el clima con la **sesión en marcha**. Un servidor dedicado vacío suele tener el reloj parado: XtreWeather lo detecta (estado *sesión parada*), deja el envío **pendiente** y lo hace en cuanto entra alguien. Si el servidor no se pausa al quedarse vacío, su reloj sigue corriendo: aparece *en marcha* y el clima se aplica sin esperar a nadie. El estado se decide cada vez que el plugin reescribe sus datos (si el reloj avanzó desde la vez anterior), así que no cambia mientras el servidor siga igual. Al cambiar de sesión (práctica → clasificación → carrera) o al reiniciar el fin de semana, vuelve a enviar el clima.
 
 ### 8.3 Conversión de datos reales
 
@@ -230,13 +230,14 @@ cd XtreWeather
 build.bat
 ```
 
-`build.bat` instala las dependencias (`requirements.txt`), genera el icono `xtreweather.ico` con el mismo dibujo que usa la aplicación y crea `XtreWeather.exe` (un solo archivo) con PyInstaller. Para ejecutarlo sin compilar: `pip install -r requirements.txt` y `python xtreweather.py`.
+`build.bat` instala las dependencias (`requirements.txt`) y crea `XtreWeather.exe` (un solo archivo) con PyInstaller, con el icono `xtreweather.ico` del repositorio en lugar del de PyInstaller. Si el Explorador sigue mostrando el icono anterior, es su caché: `build.bat` la refresca al terminar, y si aun así no cambia, cierra sesión en Windows y vuelve a entrar. Para ejecutarlo sin compilar: `pip install -r requirements.txt` y `python xtreweather.py`.
 
 Estructura:
 - `xtreweather.py`: interfaz (PySide6) y motor.
 - `xtre_core.py`: memoria compartida, proveedores, conversión y configuración.
 - `xtre_i18n.py`: textos. Para añadir un idioma, copia el bloque `"en"` y tradúcelo.
-- `xtre_iconos.py`: icono de la aplicación e iconos del cielo, dibujados con QPainter. `python xtre_iconos.py` exporta `xtreweather.ico`.
+- `xtre_iconos.py`: iconos del cielo (dibujados con QPainter) y carga del icono de la aplicación.
+- `xtreweather.ico`: icono de la aplicación y del ejecutable. Puedes sustituirlo por otro `.ico`: el `.exe`, la ventana y la bandeja usarán el nuevo. `python xtre_iconos.py` lo regenera a partir del dibujo original.
 
 ## 11. Créditos y licencia
 
