@@ -24,7 +24,7 @@ from xtre_i18n import t
 
 IS_WIN = sys.platform == "win32"
 APP_NAME = "XtreWeather"
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.3.0"
 
 
 # --------------------------------------------------------------------------- rutas / config
