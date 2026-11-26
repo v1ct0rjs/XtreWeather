@@ -1,0 +1,14 @@
+# configuracion y registros locales (contienen claves API)
+xtreweather.json
+xtreweather.json.roto
+*.tmp
+*.log
+*.log.1
+# compilacion
+build/
+dist/
+*.spec
+XtreWeather.exe
+__pycache__/
+*.pyc
+.venv/
