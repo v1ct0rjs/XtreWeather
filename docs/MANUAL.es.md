@@ -67,8 +67,10 @@ Windows Defender puede mostrar un aviso con ejecutables nuevos sin firma. El có
 - **Resumen**: una fila por servidor con su estado, circuito, sesión, modo, el clima que tiene ahora el servidor y el último envío. Doble clic en una fila para abrir su pestaña.
 - **Servidor N**: una pestaña por servidor. Los servidores en marcha se detectan y se añaden solos; con **+ Servidor** puedes añadir uno a mano para dejarlo configurado antes de arrancarlo.
 - **Registro** (parte de abajo): todo lo que hace la aplicación. También se guarda en `xtreweather.log`.
-- **Ajustes...** y **Acerca de...**: abajo a la izquierda.
-- Al cerrar la ventana, la aplicación sigue funcionando en la **bandeja del sistema** (junto al reloj). Para cerrarla del todo: clic derecho en el icono > **Salir**.
+- Menú **Archivo** (arriba a la izquierda): **Añadir servidor...** (Ctrl+N), **Ajustes...**, la opción **Seguir en segundo plano al cerrar la ventana** y **Salir** (Ctrl+Q).
+- Menú **Ayuda**: **Acerca de XtreWeather**.
+- Al cerrar la ventana, la aplicación sigue funcionando en segundo plano, en la **bandeja del sistema** (junto al reloj), y sigue controlando el clima. Viene activado por defecto; se activa o desactiva con *Archivo > Seguir en segundo plano al cerrar la ventana* (o en *Ajustes > General*). Desactivado, cerrar la ventana cierra la aplicación.
+- Para cerrarla del todo en cualquier caso: *Archivo > Salir* (Ctrl+Q) o clic derecho en el icono de la bandeja > **Salir**.
 
 El icono junto a cada servidor (en el Resumen, en su pestaña y en el bloque **Estado**) indica el cielo que tiene ahora el servidor:
 
@@ -132,7 +134,7 @@ El bloque **Estado** muestra:
 | **Consultar el tiempo real cada** | Intervalo entre consultas al proveedor. |
 | **Transición en tiempo real** | Segundos de sesión hasta alcanzar cada clima real nuevo. |
 | **Al empezar una sesión nueva, aplicar el clima casi al instante** | Al pasar de práctica a clasificación, a carrera, etc., reenvía el clima con 10 s de transición y nubes instantáneas. |
-| **Al cerrar la ventana, seguir funcionando en la bandeja** | Si se desmarca, cerrar la ventana cierra la aplicación. |
+| **Al cerrar la ventana, seguir en segundo plano** | Activado por defecto. Si se desmarca, cerrar la ventana cierra la aplicación. Es la misma opción que *Archivo > Seguir en segundo plano al cerrar la ventana*. |
 | **Arrancar minimizado en la bandeja** | Abre directamente en la bandeja. |
 | **Arrancar con Windows** | Crea la tarea programada *XtreWeather* que la abre al iniciar sesión, con privilegios. |
 

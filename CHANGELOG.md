@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Menu bar: *File* (Add server, Settings, *Keep running in the background when the window is closed*, Quit) and *Help* (About). *File > Quit* (Ctrl+Q) closes the app completely; running in the background when the window is closed stays on by default and can now be toggled straight from the menu. The Settings/About buttons at the bottom moved to the menu.
 - Weather icons for each server (clear, partly cloudy, overcast, rain, heavy rain, no data) in the Overview table, on the server tabs and in each tab's Status block.
 - `XtreWeather.exe` uses the repository's `xtreweather.ico` instead of PyInstaller's default icon; the window and tray load the same file, so they always match. Replace that file to change the icon everywhere.
 - When run from source on Windows, the taskbar shows the XtreWeather icon instead of Python's.

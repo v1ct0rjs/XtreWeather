@@ -67,8 +67,10 @@ Windows Defender may warn about new unsigned executables. The source code is in 
 - **Overview**: one row per server with its state, track, session, mode, current server weather and last sent weather. Double-click a row to open its tab.
 - **Server N**: one tab per server. Running servers are detected and added automatically; **+ Server** adds one manually so you can configure it before starting it.
 - **Log** (bottom): everything the app does. Also saved to `xtreweather.log`.
-- **Settings...** and **About...**: bottom left.
-- Closing the window keeps the app running in the **system tray**. To quit completely: right-click the icon > **Quit**.
+- **File** menu (top left): **Add server...** (Ctrl+N), **Settings...**, the **Keep running in the background when the window is closed** option and **Quit** (Ctrl+Q).
+- **Help** menu: **About XtreWeather**.
+- Closing the window keeps the app running in the background, in the **system tray** (next to the clock), still controlling the weather. On by default; toggle it with *File > Keep running in the background when the window is closed* (or in *Settings > General*). When off, closing the window quits the app.
+- To quit completely at any time: *File > Quit* (Ctrl+Q) or right-click the tray icon > **Quit**.
 
 The icon next to each server (in the Overview, on its tab and in the **Status** block) shows the sky the server has right now:
 
@@ -132,7 +134,7 @@ The **Status** block shows:
 | **Fetch real weather every** | Interval between provider requests. |
 | **Real weather transition** | Session seconds until each new real weather is reached. |
 | **When a new session starts, apply the weather almost instantly** | When going from practice to qualifying, race, etc., resends the weather with a 10 s transition and instant clouds. |
-| **When closing the window, keep running in the tray** | If unticked, closing the window quits the app. |
+| **When closing the window, keep running in the background** | On by default. If unticked, closing the window quits the app. Same option as *File > Keep running in the background when the window is closed*. |
 | **Start minimised to the tray** | Opens straight into the tray. |
 | **Start with Windows** | Creates the *XtreWeather* scheduled task that starts it at logon, elevated. |
 

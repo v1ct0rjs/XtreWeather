@@ -63,7 +63,12 @@ TEXTOS = {
         "tab_server": "Servidor {n}",
         "btn_add_server": "+ Servidor",
         "btn_settings": "Ajustes...",
-        "btn_about": "Acerca de...",
+        "menu_file": "&Archivo", "menu_help": "A&yuda",
+        "act_add_server": "Añadir servidor...",
+        "act_background": "Seguir en segundo plano al cerrar la ventana",
+        "act_quit": "&Salir", "act_about": "Acerca de {app}",
+        "log_background_on": "Al cerrar la ventana, seguirá funcionando en segundo plano (bandeja).",
+        "log_background_off": "Al cerrar la ventana, la aplicación se cerrará del todo.",
         "attribution": 'Datos meteorológicos: <a href="https://open-meteo.com/">Open-Meteo.com</a> (CC BY 4.0) '
                        '· OpenWeatherMap · WeatherAPI.com',
         "col_srv": "Srv", "col_state": "Estado", "col_track": "Circuito", "col_session": "Sesión",
@@ -74,7 +79,8 @@ TEXTOS = {
         "mode_real": "Tiempo real", "mode_manual": "Manual", "mode_off": "Desactivado",
         "tray_show": "Mostrar", "tray_quit": "Salir",
         "tray_tooltip": "{app}: {k} servidor(es) con sesión en marcha",
-        "tray_msg": "Sigue funcionando en la bandeja. Clic derecho > Salir para cerrar.",
+        "tray_msg": "Sigue funcionando en segundo plano. Para cerrarla del todo: Archivo > Salir, "
+                    "o clic derecho en este icono > Salir.",
         "add_title": "Añadir servidor", "add_prompt": "Número de servidor (perfil playerN):",
         "remove_title": "Quitar",
         "remove_running": "Ese servidor está en marcha; se volvería a añadir solo.\n"
@@ -116,7 +122,7 @@ TEXTOS = {
         "lang_restart": "El cambio de idioma se aplica al reiniciar la aplicación.",
         "lbl_interval": "Consultar el tiempo real cada", "lbl_transition": "Transición en tiempo real",
         "chk_instant": "Al empezar una sesión nueva, aplicar el clima casi al instante",
-        "chk_tray": "Al cerrar la ventana, seguir funcionando en la bandeja",
+        "chk_tray": "Al cerrar la ventana, seguir en segundo plano (icono en la bandeja)",
         "chk_start_min": "Arrancar minimizado en la bandeja",
         "chk_autostart": "Arrancar con Windows (tarea programada al iniciar sesión, con privilegios)",
         "note_calls": "Cada servidor en modo tiempo real hace 1 consulta por intervalo (15 min = 96/día). "
@@ -194,7 +200,12 @@ TEXTOS = {
         "tab_server": "Server {n}",
         "btn_add_server": "+ Server",
         "btn_settings": "Settings...",
-        "btn_about": "About...",
+        "menu_file": "&File", "menu_help": "&Help",
+        "act_add_server": "Add server...",
+        "act_background": "Keep running in the background when the window is closed",
+        "act_quit": "&Quit", "act_about": "About {app}",
+        "log_background_on": "Closing the window will keep the app running in the background (tray).",
+        "log_background_off": "Closing the window will quit the application.",
         "attribution": 'Weather data: <a href="https://open-meteo.com/">Open-Meteo.com</a> (CC BY 4.0) '
                        '· OpenWeatherMap · WeatherAPI.com',
         "col_srv": "Srv", "col_state": "State", "col_track": "Track", "col_session": "Session",
@@ -205,7 +216,8 @@ TEXTOS = {
         "mode_real": "Real weather", "mode_manual": "Manual", "mode_off": "Disabled",
         "tray_show": "Show", "tray_quit": "Quit",
         "tray_tooltip": "{app}: {k} server(s) with a running session",
-        "tray_msg": "Still running in the tray. Right-click > Quit to close.",
+        "tray_msg": "Still running in the background. To quit completely: File > Quit, "
+                    "or right-click this icon > Quit.",
         "add_title": "Add server", "add_prompt": "Server number (playerN profile):",
         "remove_title": "Remove",
         "remove_running": "That server is running; it would be added again automatically.\n"
@@ -244,7 +256,7 @@ TEXTOS = {
         "lang_restart": "Language changes apply after restarting the application.",
         "lbl_interval": "Fetch real weather every", "lbl_transition": "Real weather transition",
         "chk_instant": "When a new session starts, apply the weather almost instantly",
-        "chk_tray": "When closing the window, keep running in the tray",
+        "chk_tray": "When closing the window, keep running in the background (tray icon)",
         "chk_start_min": "Start minimised to the tray",
         "chk_autostart": "Start with Windows (scheduled task at logon, elevated)",
         "note_calls": "Each server in real weather mode makes 1 request per interval (15 min = 96/day). "

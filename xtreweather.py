@@ -773,11 +773,9 @@ class Ventana(QMainWindow):
         split.addWidget(self.log)
         split.setSizes([580, 200])
 
+        self._menu()
+
         barra = QHBoxLayout()
-        for txt, fn in ((t("btn_settings"), self._ajustes), (t("btn_about"), self._acerca)):
-            b = QPushButton(txt)
-            b.clicked.connect(fn)
-            barra.addWidget(b)
         barra.addStretch()
         atrib = QLabel(t("attribution"))
         atrib.setOpenExternalLinks(True)
@@ -813,6 +811,32 @@ class Ventana(QMainWindow):
             self._log(t("log_not_windows"))
         if not (minimizado or cfg["general"]["arrancar_minimizado"]) or not QSystemTrayIcon.isSystemTrayAvailable():
             self.show()
+
+    # ---------------------------------------------------------------- menu
+    def _menu(self):
+        m_archivo = self.menuBar().addMenu(t("menu_file"))
+        a_anadir = m_archivo.addAction(t("act_add_server"), self._anadir)
+        a_anadir.setShortcut("Ctrl+N")
+        m_archivo.addAction(t("btn_settings"), self._ajustes)
+        m_archivo.addSeparator()
+        # al cerrar la ventana: seguir en segundo plano (bandeja) o cerrar del todo; por defecto, activado
+        self.a_fondo = m_archivo.addAction(t("act_background"))
+        self.a_fondo.setCheckable(True)
+        self.a_fondo.setChecked(bool(self.cfg["general"]["minimizar_a_bandeja"]))
+        self.a_fondo.setEnabled(QSystemTrayIcon.isSystemTrayAvailable())
+        self.a_fondo.toggled.connect(self._set_fondo)
+        m_archivo.addSeparator()
+        a_salir = m_archivo.addAction(t("act_quit"), self._salir)
+        a_salir.setShortcut("Ctrl+Q")
+        m_ayuda = self.menuBar().addMenu(t("menu_help"))
+        m_ayuda.addAction(t("act_about", app=core.APP_NAME), self._acerca)
+
+    def _set_fondo(self, activo):
+        g = self.cfg["general"]
+        if bool(g["minimizar_a_bandeja"]) != activo:
+            g["minimizar_a_bandeja"] = activo
+            core.save_config(self.cfg)
+            self._log(t("log_background_on" if activo else "log_background_off"))
 
     # ---------------------------------------------------------------- resumen
     def _resumen(self):
@@ -909,6 +933,7 @@ class Ventana(QMainWindow):
     def _ajustes(self):
         if DialogoAjustes(self, self.cfg).exec():
             self._log(t("log_settings_saved"))
+            self.a_fondo.setChecked(bool(self.cfg["general"]["minimizar_a_bandeja"]))
             for n in self.motor.rt:
                 self.motor.forzar_consulta(n)
 
