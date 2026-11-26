@@ -70,6 +70,17 @@ Windows Defender may warn about new unsigned executables. The source code is in 
 - **Settings...** and **About...**: bottom left.
 - Closing the window keeps the app running in the **system tray**. To quit completely: right-click the icon > **Quit**.
 
+The icon next to each server (in the Overview, on its tab and in the **Status** block) shows the sky the server has right now:
+
+| Icon | When |
+|---|---|
+| Sun: **Clear** | clouds < 0.30 and no rain |
+| Sun and cloud: **Partly cloudy** | clouds 0.30 to 0.70 and no rain |
+| Two clouds: **Overcast** | clouds ≥ 0.70 and no rain |
+| Cloud with drops: **Rain** | rain 0.01 to 0.50 |
+| Dark cloud with more drops: **Heavy rain** | rain ≥ 0.50 (about 2.3 mm/h real) |
+| Cloud outline: **No data** | server stopped or no weather data |
+
 ## 5. Configuring a server
 
 Each tab has three modes:
@@ -219,12 +230,13 @@ cd XtreWeather
 build.bat
 ```
 
-`build.bat` installs the dependencies (`requirements.txt`) and builds a single-file `XtreWeather.exe` with PyInstaller. To run it without building: `pip install -r requirements.txt` and `python xtreweather.py`.
+`build.bat` installs the dependencies (`requirements.txt`), generates the `xtreweather.ico` icon from the same drawing the app uses and builds a single-file `XtreWeather.exe` with PyInstaller. To run it without building: `pip install -r requirements.txt` and `python xtreweather.py`.
 
 Layout:
 - `xtreweather.py`: GUI (PySide6) and engine.
 - `xtre_core.py`: shared memory, providers, conversion and config.
 - `xtre_i18n.py`: UI strings. To add a language, copy the `"en"` block and translate it.
+- `xtre_iconos.py`: app icon and sky icons, drawn with QPainter. `python xtre_iconos.py` exports `xtreweather.ico`.
 
 ## 11. Credits and licence
 
