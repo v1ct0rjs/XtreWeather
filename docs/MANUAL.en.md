@@ -67,8 +67,10 @@ Windows Defender may warn about new unsigned executables. The source code is in 
 - **Overview**: one row per server with its state, track, session, mode, current server weather and last sent weather. Double-click a row to open its tab.
 - **Server N**: one tab per server. Running servers are detected and added automatically; **+ Server** adds one manually so you can configure it before starting it.
 - **Log** (bottom): everything the app does. Also saved to `xtreweather.log`.
-- **Settings...** and **About...**: bottom left.
-- Closing the window keeps the app running in the **system tray**. To quit completely: right-click the icon > **Quit**.
+- **File** menu (top left): **Add server...** (Ctrl+N), **Settings...**, the **Keep running in the background when the window is closed** option and **Quit** (Ctrl+Q).
+- **Help** menu: **About XtreWeather**.
+- Closing the window keeps the app running in the background, in the **system tray** (next to the clock), still controlling the weather. On by default; toggle it with *File > Keep running in the background when the window is closed* (or in *Settings > General*). When off, closing the window quits the app.
+- To quit completely at any time: *File > Quit* (Ctrl+Q) or right-click the tray icon > **Quit**.
 
 The icon next to each server (in the Overview, on its tab and in the **Status** block) shows the sky the server has right now:
 
@@ -132,7 +134,7 @@ The **Status** block shows:
 | **Fetch real weather every** | Interval between provider requests. |
 | **Real weather transition** | Session seconds until each new real weather is reached. |
 | **When a new session starts, apply the weather almost instantly** | When going from practice to qualifying, race, etc., resends the weather with a 10 s transition and instant clouds. |
-| **When closing the window, keep running in the tray** | If unticked, closing the window quits the app. |
+| **When closing the window, keep running in the background** | On by default. If unticked, closing the window quits the app. Same option as *File > Keep running in the background when the window is closed*. |
 | **Start minimised to the tray** | Opens straight into the tray. |
 | **Start with Windows** | Creates the *XtreWeather* scheduled task that starts it at logon, elevated. |
 
@@ -183,7 +185,7 @@ XtreWeather writes the weather into the plugin's control buffer together with a 
 
 ### 8.2 Idle sessions
 
-rF2 only processes weather while the **session is running**. An empty dedicated server usually has its clock stopped: XtreWeather detects this (*session idle* state), keeps the send **pending** and does it as soon as someone joins. When the session changes (practice → qualifying → race) or the weekend restarts, it sends the weather again.
+rF2 only processes weather while the **session is running**. An empty dedicated server usually has its clock stopped: XtreWeather detects this (*session idle* state), keeps the send **pending** and does it as soon as someone joins. If the server doesn't pause when empty, its clock keeps running: it shows as *running* and the weather is applied without waiting for anyone. The state is decided each time the plugin rewrites its data (whether the clock advanced since the previous time), so it doesn't change while the server stays the same. When the session changes (practice → qualifying → race) or the weekend restarts, it sends the weather again.
 
 ### 8.3 Converting real data
 
@@ -230,13 +232,14 @@ cd XtreWeather
 build.bat
 ```
 
-`build.bat` installs the dependencies (`requirements.txt`), generates the `xtreweather.ico` icon from the same drawing the app uses and builds a single-file `XtreWeather.exe` with PyInstaller. To run it without building: `pip install -r requirements.txt` and `python xtreweather.py`.
+`build.bat` installs the dependencies (`requirements.txt`) and builds a single-file `XtreWeather.exe` with PyInstaller, using the repository's `xtreweather.ico` instead of PyInstaller's default icon. If Explorer still shows the old icon, that's its cache: `build.bat` refreshes it at the end, and if it still doesn't change, sign out of Windows and back in. To run it without building: `pip install -r requirements.txt` and `python xtreweather.py`.
 
 Layout:
 - `xtreweather.py`: GUI (PySide6) and engine.
 - `xtre_core.py`: shared memory, providers, conversion and config.
 - `xtre_i18n.py`: UI strings. To add a language, copy the `"en"` block and translate it.
-- `xtre_iconos.py`: app icon and sky icons, drawn with QPainter. `python xtre_iconos.py` exports `xtreweather.ico`.
+- `xtre_iconos.py`: sky icons (drawn with QPainter) and loading of the app icon.
+- `xtreweather.ico`: app and executable icon. You can replace it with another `.ico`: the `.exe`, the window and the tray will use the new one. `python xtre_iconos.py` regenerates it from the original drawing.
 
 ## 11. Credits and licence
 
