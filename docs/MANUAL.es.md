@@ -70,6 +70,17 @@ Windows Defender puede mostrar un aviso con ejecutables nuevos sin firma. El có
 - **Ajustes...** y **Acerca de...**: abajo a la izquierda.
 - Al cerrar la ventana, la aplicación sigue funcionando en la **bandeja del sistema** (junto al reloj). Para cerrarla del todo: clic derecho en el icono > **Salir**.
 
+El icono junto a cada servidor (en el Resumen, en su pestaña y en el bloque **Estado**) indica el cielo que tiene ahora el servidor:
+
+| Icono | Cuándo |
+|---|---|
+| Sol: **Despejado** | nubes < 0,30 y sin lluvia |
+| Sol y nube: **Poco nuboso** | nubes de 0,30 a 0,70 y sin lluvia |
+| Dos nubes: **Nublado** | nubes ≥ 0,70 y sin lluvia |
+| Nube con gotas: **Lluvia** | lluvia de 0,01 a 0,50 |
+| Nube oscura con más gotas: **Lluvia fuerte** | lluvia ≥ 0,50 (unos 2,3 mm/h reales) |
+| Contorno de nube: **Sin datos** | servidor parado o sin datos de clima |
+
 ## 5. Configurar un servidor
 
 Cada pestaña tiene tres modos:
@@ -219,12 +230,13 @@ cd XtreWeather
 build.bat
 ```
 
-`build.bat` instala las dependencias (`requirements.txt`) y genera `XtreWeather.exe` (un solo archivo) con PyInstaller. Para ejecutarlo sin compilar: `pip install -r requirements.txt` y `python xtreweather.py`.
+`build.bat` instala las dependencias (`requirements.txt`), genera el icono `xtreweather.ico` con el mismo dibujo que usa la aplicación y crea `XtreWeather.exe` (un solo archivo) con PyInstaller. Para ejecutarlo sin compilar: `pip install -r requirements.txt` y `python xtreweather.py`.
 
 Estructura:
 - `xtreweather.py`: interfaz (PySide6) y motor.
 - `xtre_core.py`: memoria compartida, proveedores, conversión y configuración.
 - `xtre_i18n.py`: textos. Para añadir un idioma, copia el bloque `"en"` y tradúcelo.
+- `xtre_iconos.py`: icono de la aplicación e iconos del cielo, dibujados con QPainter. `python xtre_iconos.py` exporta `xtreweather.ico`.
 
 ## 11. Créditos y licencia
 
